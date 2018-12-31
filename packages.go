@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/cmplx"
 	"strconv"
 	"strings"
 )
@@ -43,6 +44,17 @@ func main() {
 	fmt.Println("variables")
 	fmt.Println(c, python, java)
 	fmt.Println(package_variable1, package_variable2, package_variable3, package_variable4, package_variable5)
-
 	i := 0 // var 宣言を使わず暗黙的に型宣言
+	fmt.Println(i)
+
+	var (
+		ToBe   bool       = false
+		MaxInt uint64     = 1<<64 - 1
+		z      complex128 = cmplx.Sqrt(-5 + 12i)
+		str    []rune     = []rune("日本語")
+	)
+	fmt.Printf("Type: %T Value: %v\n", ToBe, ToBe)
+	fmt.Printf("Type: %T Value: %v\n", MaxInt, MaxInt)
+	fmt.Printf("Type: %T Value: %v\n", z, z)
+	fmt.Printf("Type: %T Value: %#U\n", str, str)
 }
