@@ -58,5 +58,3 @@ func main() {
 	c, python, java := true, false, "no!"
 	fmt.Println(p, q, s, c, python, java)
 }
-
-// watch -n1 go build -o main
