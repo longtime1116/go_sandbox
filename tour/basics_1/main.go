@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-
 	"math"
+
 	// factored インポートステートメント。こっちの方が望ましい
+	"math/cmplx"
 	"math/rand"
 )
 
@@ -33,7 +34,12 @@ func split(sum int) (x, y int) {
 // 変数宣言
 var c, python, java bool
 
-// 変数
+func needInt(x int) int {
+	return x*10 + 1
+}
+func needFloat(x float64) float64 {
+	return x * 0.1
+}
 
 func main() {
 	fmt.Println("number: ", math.Sqrt(10))
@@ -53,8 +59,43 @@ func main() {
 	fmt.Println(i, c, python, java)
 
 	var p, q int = 1, 2
-	// 暗黙的な型宣言
+	// 暗黙的な型宣言は:=で
 	s := 3
 	c, python, java := true, false, "no!"
 	fmt.Println(p, q, s, c, python, java)
+
+	// 型
+	// NOTE: 理由がないならintを使う
+	var (
+		ToBe      bool       = true
+		MaxUint              = ^uint(0)
+		MaxUint64 uint64     = 1<<64 - 1
+		z         complex128 = cmplx.Sqrt(-5 + 12i)
+		str       string     = "mr.hoge"
+	)
+	fmt.Printf("Types: %T, Value: %v\n", ToBe, ToBe)
+	fmt.Printf("Types: %T, Value: %v\n", MaxUint, MaxUint)
+	fmt.Printf("Types: %T, Value: %v\n", MaxUint64, MaxUint64)
+	fmt.Printf("Types: %T, Value: %v\n", z, z)
+	fmt.Printf("Types: %T, Value: %v\n", str, str)
+
+	// type conversions
+	var (
+		z1 int     = 2
+		f  float64 = math.Sqrt(float64(z1))
+		z3         = uint(f)
+	)
+	fmt.Println(z1, f, z3)
+
+	// constants は := で宣言できない
+	const Word = "tango"
+	fmt.Println("Hello,", Word)
+
+	const (
+		Big   = 1 << 100
+		Small = Big >> 99
+	)
+	// エラーになる
+	//fmt.Println(Big, Small)
+	fmt.Println(needInt(Small), needFloat(Small), needFloat(Big))
 }
