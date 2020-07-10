@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"strings"
+
+	"golang.org/x/tour/pic"
 )
 
 // Vertex 構造体は、フィールド(field)のあつまり
@@ -20,6 +22,20 @@ func printBoard(b [][]string) {
 	for i := 0; i < len(b); i++ {
 		fmt.Printf("%s\n", strings.Join(b[i], " "))
 	}
+}
+
+// Pic is for exercise
+func Pic(dx, dy int) [][]uint8 {
+	p := make([][]uint8, dy)
+	for i := 0; i < dy; i++ {
+		p[i] = make([]uint8, dx)
+		for j := 0; j < dx; j++ {
+			p[i][j] = uint8(i + j)
+		}
+	}
+
+	return p
+
 }
 
 func main() {
@@ -168,5 +184,10 @@ func main() {
 			}
 		}
 	}
+	// Exercise: Slices
+	// 画像の表示方法は以下
+	// 	$ ./main |  sed -e 's/IMAGE:\(.*\)/<img src="data:image\/png;base64,\1">/g' > hoge.html
+	// 	$ open hoge.html
+	pic.Show(Pic)
 
 }
