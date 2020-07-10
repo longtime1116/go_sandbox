@@ -12,6 +12,20 @@ func sqrt(x float64) string {
 	return fmt.Sprint(math.Sqrt(x))
 }
 
+// Sqrt 大文字で始まる関数はexportされるのでコメントが必要
+func Sqrt(x float64) float64 {
+	z := 1.0
+
+	c := 0
+	for d := 1.0; math.Abs(d) > 1e-10; z -= d {
+		d = (z*z - x) / (2 * z)
+		c++
+	}
+	fmt.Println("count:", c)
+
+	return z
+}
+
 func pow(x, n, lim float64) float64 {
 	if v := math.Pow(x, n); v < lim {
 		return v
@@ -42,5 +56,6 @@ func main() {
 	fmt.Println(sqrt(-25))
 
 	fmt.Println(pow(3, 2, 10), pow(3, 3, 20))
+	fmt.Println(Sqrt(25))
 
 }
