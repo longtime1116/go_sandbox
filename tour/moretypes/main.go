@@ -5,12 +5,17 @@ import (
 	"strings"
 
 	"golang.org/x/tour/pic"
+	"golang.org/x/tour/wc"
 )
 
 // Vertex 構造体は、フィールド(field)のあつまり
 type Vertex struct {
 	X int
 	Y int
+}
+
+type Location struct {
+	Lat, Long float64
 }
 
 func printSlices(s []int) {
@@ -36,6 +41,17 @@ func Pic(dx, dy int) [][]uint8 {
 
 	return p
 
+}
+
+// WordCount is for exercise
+func WordCount(s string) map[string]int {
+	m := make(map[string]int)
+
+	for _, v := range strings.Fields(s) {
+		m[v]++
+	}
+
+	return m
 }
 
 func main() {
@@ -183,11 +199,43 @@ func main() {
 				fmt.Printf("%d\n", v)
 			}
 		}
-	}
-	// Exercise: Slices
-	// 画像の表示方法は以下
-	// 	$ ./main |  sed -e 's/IMAGE:\(.*\)/<img src="data:image\/png;base64,\1">/g' > hoge.html
-	// 	$ open hoge.html
-	pic.Show(Pic)
+		// Exercise: Slices
+		// 画像の表示方法は以下
+		// 	$ ./main |  sed -e 's/IMAGE:\(.*\)/<img src="data:image\/png;base64,\1">/g' > hoge.html
+		// 	$ open hoge.html
+		pic.Show(Pic)
+
+		// creating map
+		{
+			// ゼロ値はnil。キーを持たず、追加もできない
+			var m map[string]Location
+			m = make(map[string]Location)
+			//var m = make(map[string]Location)
+			m["Bell Labs"] = Location{40.68433, -74.39967}
+			m["Alice Labs"] = Location{30.68433, -64.39967}
+			fmt.Println(m["Bell Labs"])
+			fmt.Println(m)
+
+			var m2 = map[string]Location{
+				"a": Location{1, 2},
+				"b": {3, 4}, // 単純ならば省略可能
+			}
+			fmt.Println(m2)
+		}
+		// map操作
+		{
+			m := make(map[string]int)
+			m["Answer"] = 42
+			fmt.Println("ans:", m["Answer"])
+			m["Answer"] = 48
+			fmt.Println("ans:", m["Answer"])
+			delete(m, "Answer")
+			fmt.Println("ans:", m["Answer"])
+			v, ok := m["Anwser"]
+			fmt.Println("ans:", v, "Present?", ok)
+		}
+	} // false end
+
+	wc.Test(WordCount)
 
 }
