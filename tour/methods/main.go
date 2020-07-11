@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"time"
 )
 
 type Vertex struct {
@@ -94,6 +95,47 @@ type IPAddr struct {
 
 func (ip IPAddr) String() string {
 	return fmt.Sprintf("%d.%d.%d.%d", ip.addr1, ip.addr2, ip.addr3, ip.addr4)
+}
+
+type MyError struct {
+	When time.Time
+	What string
+}
+
+func (e *MyError) Error() string {
+	return fmt.Sprintf("%s(%v)", e.What, e.When)
+}
+
+func run() error {
+	return &MyError{
+		time.Now(),
+		"it didn't work.",
+	}
+}
+
+func Sqrt(x float64) (float64, error) {
+	if x < 0 {
+		return 0, ErrNegativeSqrt(x)
+	}
+	z := 1.0
+
+	c := 0
+	for d := 1.0; math.Abs(d) > 1e-10; z -= d {
+		d = (z*z - x) / (2 * z)
+		c++
+	}
+	fmt.Println("count:", c)
+
+	return z, nil
+}
+
+type ErrNegativeSqrt float64
+
+func (e ErrNegativeSqrt) Error() string {
+	fmt.Println("aaa")
+	// %v を使うとstack overflowする
+	// これは、ErrNegativeSqrtを文字列に変換する String() のなかで、また ErrNegativeSqrt を文字列にするために String()を読んで・・・となるから
+	return fmt.Sprintf("cannot Sqrt negative number: %f", e)
 }
 
 func main() {
@@ -203,5 +245,26 @@ func main() {
 		for name, ip := range hosts {
 			fmt.Printf("%v: %v\n", name, ip)
 		}
+	}
+	{
+		if err := run(); err != nil {
+			fmt.Println(err)
+		}
+	}
+	{
+		// Exercise: Errors
+		x, err := Sqrt(math.Sqrt2)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(x)
+		}
+		y, err := Sqrt(-math.Sqrt2)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(y)
+		}
+
 	}
 }
