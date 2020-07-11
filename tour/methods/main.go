@@ -63,7 +63,7 @@ func (mf MyFloat) Abs() (ret float64) {
 	return
 }
 
-func describe(i I) {
+func describe(i interface{}) {
 	fmt.Printf("(%v, %T)\n", i, i)
 }
 
@@ -120,5 +120,33 @@ func main() {
 		describe(i)
 		// NOTE: tは別にインスタンスではないので、あくまで引数としてT型が渡されたときのM()関数が呼ばれるから、こういう挙動になる
 		t.M()
+	}
+	{
+		var i I
+		describe(i)
+		// runtime error(SIGSEGV)
+		//i.M()
+	}
+	{
+		// 空のインターフェース
+		var i interface{}
+		describe(i)
+		i = 42
+		describe(i)
+	}
+	{
+		var i interface{} = "hello"
+		s := i.(string)
+		fmt.Println(s)
+		s, ok := i.(string)
+		fmt.Println(s, ok)
+		// 型アサーションによりpanicを引き起こす
+		//f := i.(float64)
+		//fmt.Println(f)
+		f, ok := i.(float64)
+		fmt.Println(f, ok)
+		var i2 I = &T{"hello"}
+		t, ok := i2.(*T)
+		fmt.Println(t, ok)
 	}
 }
