@@ -67,86 +67,141 @@ func describe(i interface{}) {
 	fmt.Printf("(%v, %T)\n", i, i)
 }
 
+func do(i interface{}) {
+	switch v := i.(type) {
+	case int:
+		fmt.Printf("int: %T, %v\n", v, v)
+	case string:
+		fmt.Printf("string: %T, %v\n", v, v)
+	default:
+		fmt.Printf("I dont know about type %T\n", v)
+	}
+
+}
+
+type Person struct {
+	Name string
+	Age  int
+}
+
+func (p Person) String() string {
+	return fmt.Sprintf("<name: %v, age: %v>", p.Name, p.Age)
+}
+
+type IPAddr struct {
+	addr1, addr2, addr3, addr4 int
+}
+
+func (ip IPAddr) String() string {
+	return fmt.Sprintf("%d.%d.%d.%d", ip.addr1, ip.addr2, ip.addr3, ip.addr4)
+}
+
 func main() {
+	if false {
+		{
+			// NOTE: ポインタレシーバを使う理由
+			// 1. メソッドがレシーバの指す先の変数を変更するため
+			// 2. メソッドの呼び出しごとに変数のコピーをせずに済む
+			// NOTE: 一般に、変数レシーバとポインタレシーバを混合させるべきでは無い
+
+			v := Vertex{3, 4}
+			fmt.Println(v.Abs())
+			fmt.Println(Abs(v))
+
+			//fmt.Println(-math.Sqrt2)
+			mf := MyFloat(-math.Sqrt2)
+			fmt.Println(mf.Abs())
+
+			// (&v).Scale(10) を自動で呼び出してくれる
+			// また、変数レシーバのメソッドにポインタを渡したら(*p).Abs()みたいに呼び出してくれる
+			v.Scale(10)
+			(&v).Scale(10)
+			// ポインタレシーバじゃなければ、明示的にポインタを渡す必要あり
+			Scale(&v, 10)
+			fmt.Println(v)
+		}
+		{
+			// 普通は mf や v に Abs() を呼び出すが、aに対して呼び出せる
+			var a Abser
+			mf := MyFloat(-math.Sqrt2)
+			v := Vertex{3, 4}
+
+			a = mf // a Myfloat implements Abser
+			a = &v
+			//a = v // compile error
+			fmt.Println(a.Abs())
+
+			// インタフェースを実装することを明示的に宣言する必要はない
+			// この場合、TはIというinterfaceを実装することを明示的に宣言しない
+			var i I = &T{"hello"}
+			describe(i)
+			i.M()
+			i = F(math.Pi)
+			describe(i)
+			i.M()
+		}
+		{
+			var i I
+			var t *T
+			i = t
+			// nil に対して実行をしてもSEGVにならないように実装するのが一般的
+			// nilを保持するインタフェースそれ自体はnilではない
+			i.M()
+			describe(i)
+			// NOTE: tは別にインスタンスではないので、あくまで引数としてT型が渡されたときのM()関数が呼ばれるから、こういう挙動になる
+			t.M()
+		}
+		{
+			var i I
+			describe(i)
+			// runtime error(SIGSEGV)
+			//i.M()
+		}
+		{
+			// 空のインターフェース
+			var i interface{}
+			describe(i)
+			i = 42
+			describe(i)
+		}
+		{
+			var i interface{} = "hello"
+			s := i.(string)
+			fmt.Println(s)
+			s, ok := i.(string)
+			fmt.Println(s, ok)
+			// 型アサーションによりpanicを引き起こす
+			//f := i.(float64)
+			//fmt.Println(f)
+			f, ok := i.(float64)
+			fmt.Println(f, ok)
+			var i2 I = &T{"hello"}
+			t, ok := i2.(*T)
+			fmt.Println(t, ok)
+		}
+		{
+			do(21)
+			do("hello")
+			do(true)
+		}
+	} // false end
 	{
-		// NOTE: ポインタレシーバを使う理由
-		// 1. メソッドがレシーバの指す先の変数を変更するため
-		// 2. メソッドの呼び出しごとに変数のコピーをせずに済む
-		// NOTE: 一般に、変数レシーバとポインタレシーバを混合させるべきでは無い
-
-		v := Vertex{3, 4}
-		fmt.Println(v.Abs())
-		fmt.Println(Abs(v))
-
-		//fmt.Println(-math.Sqrt2)
-		mf := MyFloat(-math.Sqrt2)
-		fmt.Println(mf.Abs())
-
-		// (&v).Scale(10) を自動で呼び出してくれる
-		// また、変数レシーバのメソッドにポインタを渡したら(*p).Abs()みたいに呼び出してくれる
-		v.Scale(10)
-		(&v).Scale(10)
-		// ポインタレシーバじゃなければ、明示的にポインタを渡す必要あり
-		Scale(&v, 10)
-		fmt.Println(v)
+		// Person型
+		a := Person{"Adam", 28}
+		b := Person{"Bob", 77}
+		fmt.Println(a)
+		fmt.Println(b)
 	}
 	{
-		// 普通は mf や v に Abs() を呼び出すが、aに対して呼び出せる
-		var a Abser
-		mf := MyFloat(-math.Sqrt2)
-		v := Vertex{3, 4}
-
-		a = mf // a Myfloat implements Abser
-		a = &v
-		//a = v // compile error
-		fmt.Println(a.Abs())
-
-		// インタフェースを実装することを明示的に宣言する必要はない
-		// この場合、TはIというinterfaceを実装することを明示的に宣言しない
-		var i I = &T{"hello"}
-		describe(i)
-		i.M()
-		i = F(math.Pi)
-		describe(i)
-		i.M()
-	}
-	{
-		var i I
-		var t *T
-		i = t
-		// nil に対して実行をしてもSEGVにならないように実装するのが一般的
-		// nilを保持するインタフェースそれ自体はnilではない
-		i.M()
-		describe(i)
-		// NOTE: tは別にインスタンスではないので、あくまで引数としてT型が渡されたときのM()関数が呼ばれるから、こういう挙動になる
-		t.M()
-	}
-	{
-		var i I
-		describe(i)
-		// runtime error(SIGSEGV)
-		//i.M()
-	}
-	{
-		// 空のインターフェース
-		var i interface{}
-		describe(i)
-		i = 42
-		describe(i)
-	}
-	{
-		var i interface{} = "hello"
-		s := i.(string)
-		fmt.Println(s)
-		s, ok := i.(string)
-		fmt.Println(s, ok)
-		// 型アサーションによりpanicを引き起こす
-		//f := i.(float64)
-		//fmt.Println(f)
-		f, ok := i.(float64)
-		fmt.Println(f, ok)
-		var i2 I = &T{"hello"}
-		t, ok := i2.(*T)
-		fmt.Println(t, ok)
+		// Exercise: IPAddr 型
+		ip := IPAddr{192, 168, 11, 1}
+		fmt.Println(ip)
+		hosts := map[string]IPAddr{
+			"lookback":  {127, 0, 0, 1},
+			"googleDNS": {8, 8, 8, 8},
+		}
+		for name, ip := range hosts {
+			fmt.Printf("%v: %v\n", name, ip)
+		}
 	}
 }
