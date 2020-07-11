@@ -132,7 +132,6 @@ func Sqrt(x float64) (float64, error) {
 type ErrNegativeSqrt float64
 
 func (e ErrNegativeSqrt) Error() string {
-	fmt.Println("aaa")
 	// %v を使うとstack overflowする
 	// これは、ErrNegativeSqrtを文字列に変換する String() のなかで、また ErrNegativeSqrt を文字列にするために String()を読んで・・・となるから
 	return fmt.Sprintf("cannot Sqrt negative number: %f", e)
