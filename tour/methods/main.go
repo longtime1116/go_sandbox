@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"os"
 	"strings"
 	"time"
 
@@ -139,6 +140,34 @@ func (e ErrNegativeSqrt) Error() string {
 	// %v を使うとstack overflowする
 	// これは、ErrNegativeSqrtを文字列に変換する String() のなかで、また ErrNegativeSqrt を文字列にするために String()を読んで・・・となるから
 	return fmt.Sprintf("cannot Sqrt negative number: %f", e)
+}
+
+type MyReader struct{}
+
+func (r MyReader) Read(buf []byte) (n int, e error) {
+	for i := range buf {
+		buf[i] = 'A'
+	}
+	return len(buf), nil
+}
+
+type rot13Reader struct {
+	r io.Reader
+}
+
+func (r3r rot13Reader) Read(buf []byte) (int, error) {
+	n, err := r3r.r.Read(buf)
+	if err == io.EOF {
+		return n, err
+	}
+	for i, c := range buf {
+		if (c >= 'A' && c <= 'M') || (c >= 'a' && c <= 'm') {
+			buf[i] = c + 13
+		} else if c >= 'N' && c <= 'Z' || c >= 'n' && c <= 'z' {
+			buf[i] = c - 13
+		}
+	}
+	return n, nil
 }
 
 func main() {
@@ -302,13 +331,10 @@ func main() {
 		//	}
 		//}
 	}
-}
-
-type MyReader struct{}
-
-func (r MyReader) Read(buf []byte) (n int, e error) {
-	for i := range buf {
-		buf[i] = 'A'
+	{
+		// Exercise: rot13Reader
+		s := strings.NewReader("Lbh penpxrq gur pbqr!")
+		r := rot13Reader{s}
+		io.Copy(os.Stdout, &r)
 	}
-	return len(buf), nil
 }
