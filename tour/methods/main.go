@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"math"
+	"strings"
 	"time"
+
+	"golang.org/x/tour/reader"
 )
 
 type Vertex struct {
@@ -225,45 +229,86 @@ func main() {
 			do("hello")
 			do(true)
 		}
-	} // false end
-	{
-		// Person型
-		a := Person{"Adam", 28}
-		b := Person{"Bob", 77}
-		fmt.Println(a)
-		fmt.Println(b)
-	}
-	{
-		// Exercise: IPAddr 型
-		ip := IPAddr{192, 168, 11, 1}
-		fmt.Println(ip)
-		hosts := map[string]IPAddr{
-			"lookback":  {127, 0, 0, 1},
-			"googleDNS": {8, 8, 8, 8},
+		{
+			// Person型
+			a := Person{"Adam", 28}
+			b := Person{"Bob", 77}
+			fmt.Println(a)
+			fmt.Println(b)
 		}
-		for name, ip := range hosts {
-			fmt.Printf("%v: %v\n", name, ip)
+		{
+			// Exercise: IPAddr 型
+			ip := IPAddr{192, 168, 11, 1}
+			fmt.Println(ip)
+			hosts := map[string]IPAddr{
+				"lookback":  {127, 0, 0, 1},
+				"googleDNS": {8, 8, 8, 8},
+			}
+			for name, ip := range hosts {
+				fmt.Printf("%v: %v\n", name, ip)
+			}
 		}
-	}
-	{
-		if err := run(); err != nil {
-			fmt.Println(err)
+		{
+			if err := run(); err != nil {
+				fmt.Println(err)
+			}
 		}
-	}
-	{
-		// Exercise: Errors
-		x, err := Sqrt(math.Sqrt2)
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println(x)
-		}
-		y, err := Sqrt(-math.Sqrt2)
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println(y)
-		}
+		{
+			// Exercise: Errors
+			x, err := Sqrt(math.Sqrt2)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println(x)
+			}
+			y, err := Sqrt(-math.Sqrt2)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println(y)
+			}
 
+		}
+	} // false end
+
+	{
+		// Reader
+		r := strings.NewReader("Hello, Reader!")
+		b := make([]byte, 8)
+		for {
+			// io.Reader インタフェースは↓を持つ
+			// 	func (T) Read(b []byte) (n int, err error)
+			n, err := r.Read(b)
+			fmt.Printf("n = %v, err = %v, b = %v\n", n, err, b)
+			fmt.Printf("b[:n] = %q\n", b[:n])
+			if err == io.EOF {
+				break
+			}
+		}
 	}
+	{
+		// Exercise: Readers
+		reader.Validate(MyReader{})
+		//r := MyReader{}
+		//b := make([]byte, 4)
+		//for {
+		//	// io.Reader インタフェースは↓を持つ
+		//	// 	func (T) Read(b []byte) (n int, err error)
+		//	n, err := r.Read(b)
+		//	fmt.Printf("n = %v, err = %v, b = %v\n", n, err, b)
+		//	fmt.Printf("b[:n] = %q\n", b[:n])
+		//	if err == io.EOF {
+		//		break
+		//	}
+		//}
+	}
+}
+
+type MyReader struct{}
+
+func (r MyReader) Read(buf []byte) (n int, e error) {
+	for i := range buf {
+		buf[i] = 'A'
+	}
+	return len(buf), nil
 }
