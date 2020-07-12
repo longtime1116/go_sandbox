@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"image"
+	"image/color"
 	"io"
 	"math"
 	"os"
 	"strings"
 	"time"
 
+	"golang.org/x/tour/pic"
 	"golang.org/x/tour/reader"
 )
 
@@ -170,6 +173,21 @@ func (r3r rot13Reader) Read(buf []byte) (int, error) {
 	return n, nil
 }
 
+type Image struct {
+}
+
+func (i Image) ColorModel() color.Model {
+	return color.RGBAModel
+}
+func (i Image) Bounds() image.Rectangle {
+	return image.Rect(0, 0, 1000, 2000)
+}
+
+func (i Image) At(x, y int) color.Color {
+	v := uint8((x + y) / 2)
+	return color.RGBA{v, v, 0, 255}
+}
+
 func main() {
 	if false {
 		{
@@ -298,43 +316,49 @@ func main() {
 			}
 
 		}
+		{
+			// Reader
+			r := strings.NewReader("Hello, Reader!")
+			b := make([]byte, 8)
+			for {
+				// io.Reader インタフェースは↓を持つ
+				// 	func (T) Read(b []byte) (n int, err error)
+				n, err := r.Read(b)
+				fmt.Printf("n = %v, err = %v, b = %v\n", n, err, b)
+				fmt.Printf("b[:n] = %q\n", b[:n])
+				if err == io.EOF {
+					break
+				}
+			}
+		}
+		{
+			// Exercise: Readers
+			reader.Validate(MyReader{})
+			//r := MyReader{}
+			//b := make([]byte, 4)
+			//for {
+			//	// io.Reader インタフェースは↓を持つ
+			//	// 	func (T) Read(b []byte) (n int, err error)
+			//	n, err := r.Read(b)
+			//	fmt.Printf("n = %v, err = %v, b = %v\n", n, err, b)
+			//	fmt.Printf("b[:n] = %q\n", b[:n])
+			//	if err == io.EOF {
+			//		break
+			//	}
+			//}
+		}
+		{
+			// Exercise: rot13Reader
+			s := strings.NewReader("Lbh penpxrq gur pbqr!")
+			r := rot13Reader{s}
+			io.Copy(os.Stdout, &r)
+		}
 	} // false end
 
 	{
-		// Reader
-		r := strings.NewReader("Hello, Reader!")
-		b := make([]byte, 8)
-		for {
-			// io.Reader インタフェースは↓を持つ
-			// 	func (T) Read(b []byte) (n int, err error)
-			n, err := r.Read(b)
-			fmt.Printf("n = %v, err = %v, b = %v\n", n, err, b)
-			fmt.Printf("b[:n] = %q\n", b[:n])
-			if err == io.EOF {
-				break
-			}
-		}
-	}
-	{
-		// Exercise: Readers
-		reader.Validate(MyReader{})
-		//r := MyReader{}
-		//b := make([]byte, 4)
-		//for {
-		//	// io.Reader インタフェースは↓を持つ
-		//	// 	func (T) Read(b []byte) (n int, err error)
-		//	n, err := r.Read(b)
-		//	fmt.Printf("n = %v, err = %v, b = %v\n", n, err, b)
-		//	fmt.Printf("b[:n] = %q\n", b[:n])
-		//	if err == io.EOF {
-		//		break
-		//	}
-		//}
-	}
-	{
-		// Exercise: rot13Reader
-		s := strings.NewReader("Lbh penpxrq gur pbqr!")
-		r := rot13Reader{s}
-		io.Copy(os.Stdout, &r)
+		// Exercise: Image
+		// 	./main |  sed -e 's/IMAGE:\(.*\)/<img src="data:image\/png;base64,\1">/g' > hoge.html; open hoge.html
+		m := Image{}
+		pic.ShowImage(m)
 	}
 }
