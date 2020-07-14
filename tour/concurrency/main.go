@@ -86,6 +86,18 @@ func walk(t *tree.Tree, ch chan int) {
 	}
 }
 
+type SafeCounter struct {
+	v   map[string]int
+	mux sync.Mutex
+}
+
+func (c *SafeCounter) Inc(key string) {
+	// Inc() が goroutine として実行されるという前提があり、goroutine として一つだけが実行されている状態を作るためにやる
+	c.mux.Lock()
+	c.v[key]++
+	c.mux.Unlock()
+}
+
 func main() {
 	if false {
 		{
@@ -172,25 +184,11 @@ func main() {
 			fmt.Println(Same(tree.New(1), tree.New(1)))
 			fmt.Println(Same(tree.New(4), tree.New(6)))
 		}
+		c := SafeCounter{v: make(map[string]int)}
+		for i := 0; i < 1000; i++ {
+			go c.Inc("hoge")
+		}
+		time.Sleep(time.Second)
+		fmt.Println(c.v["hoge"])
 	} // false end
-
-	c := SafeCounter{v: make(map[string]int)}
-	for i := 0; i < 1000; i++ {
-		go c.Inc("hoge")
-	}
-	time.Sleep(time.Second)
-	fmt.Println(c.v["hoge"])
-
-}
-
-type SafeCounter struct {
-	v   map[string]int
-	mux sync.Mutex
-}
-
-func (c *SafeCounter) Inc(key string) {
-	// Inc() が goroutine として実行されるという前提があり、goroutine として一つだけが実行されている状態を作るためにやる
-	c.mux.Lock()
-	c.v[key]++
-	c.mux.Unlock()
 }
