@@ -145,27 +145,32 @@ func main() {
 			fibonacci2(c, quit)
 		}
 
-		tick := time.Tick(100 * time.Millisecond)
-		boom := time.After(500 * time.Millisecond)
-		// このSleepを入れると、selectで複数のcaseに当てはまる時にランダムで選ばれることを実証できる
-		// time.Sleep(1000 * time.Millisecond)
-		for {
-			select {
-			case <-tick:
-				fmt.Println("tick.")
-			case <-boom:
-				fmt.Println("BOOM!")
-				return
-			default:
-				fmt.Println("   .")
-				time.Sleep(50 * time.Millisecond)
+		{
+			tick := time.Tick(100 * time.Millisecond)
+			boom := time.After(500 * time.Millisecond)
+			// このSleepを入れると、selectで複数のcaseに当てはまる時にランダムで選ばれることを実証できる
+			// time.Sleep(1000 * time.Millisecond)
+		L:
+			for {
+				select {
+				case <-tick:
+					fmt.Println("tick.")
+				case <-boom:
+					fmt.Println("BOOM!")
+					// Labeled Break
+					break L
+				default:
+					fmt.Println("   .")
+					time.Sleep(50 * time.Millisecond)
+				}
 			}
+
+		}
+		{
+			// Exercise: Equivalent Binary Trees
+			fmt.Println(Same(tree.New(1), tree.New(1)))
+			fmt.Println(Same(tree.New(4), tree.New(6)))
 		}
 	} // false end
-	{
-		// Exercise: Equivalent Binary Trees
-		fmt.Println(Same(tree.New(1), tree.New(1)))
-		fmt.Println(Same(tree.New(4), tree.New(6)))
-	}
 
 }
