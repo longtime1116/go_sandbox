@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"time"
+
+	"golang.org/x/tour/tree"
 )
 
 func say(s string) {
@@ -32,6 +34,55 @@ func fibonacci(n int, c chan int) {
 	// ここではこれをしないとデッドロックを検出してエラーになる
 	// とはいえ、チャネルはファイルと違って必ずcloseしなければならないわけではない
 	close(c)
+}
+
+func fibonacci2(c, quit chan int) {
+	x, y := 0, 1
+	for {
+		fmt.Println("waiting...")
+		select {
+		case c <- x:
+			time.Sleep(500 * time.Millisecond)
+			fmt.Printf("sent %v to c\n", x)
+			x, y = y, x+y
+		case <-quit:
+			fmt.Println("quit")
+			return
+		}
+	}
+}
+
+func Same(t1, t2 *tree.Tree) bool {
+	c1, c2 := make(chan int), make(chan int)
+	go Walk(t1, c1)
+	go Walk(t2, c2)
+	for {
+
+		v1, ok1 := <-c1
+		v2, ok2 := <-c2
+		//fmt.Printf("v1: %v, ok1: %v, v2: %v, ok2: %v\n", v1, ok1, v2, ok2)
+		if ok1 != ok2 || v1 != v2 {
+			return false
+		}
+		if ok1 == false && ok2 == false {
+			return true
+		}
+	}
+}
+
+func Walk(t *tree.Tree, ch chan int) {
+	walk(t, ch)
+	close(ch)
+}
+
+func walk(t *tree.Tree, ch chan int) {
+	if t.Left != nil {
+		walk(t.Left, ch)
+	}
+	ch <- t.Value
+	if t.Right != nil {
+		walk(t.Right, ch)
+	}
 }
 
 func main() {
@@ -93,39 +144,28 @@ func main() {
 			}()
 			fibonacci2(c, quit)
 		}
+
+		tick := time.Tick(100 * time.Millisecond)
+		boom := time.After(500 * time.Millisecond)
+		// このSleepを入れると、selectで複数のcaseに当てはまる時にランダムで選ばれることを実証できる
+		// time.Sleep(1000 * time.Millisecond)
+		for {
+			select {
+			case <-tick:
+				fmt.Println("tick.")
+			case <-boom:
+				fmt.Println("BOOM!")
+				return
+			default:
+				fmt.Println("   .")
+				time.Sleep(50 * time.Millisecond)
+			}
+		}
 	} // false end
-
-	tick := time.Tick(100 * time.Millisecond)
-	boom := time.After(500 * time.Millisecond)
-	// このSleepを入れると、selectで複数のcaseに当てはまる時にランダムで選ばれることを実証できる
-	// time.Sleep(1000 * time.Millisecond)
-	for {
-		select {
-		case <-tick:
-			fmt.Println("tick.")
-		case <-boom:
-			fmt.Println("BOOM!")
-			return
-		default:
-			fmt.Println("   .")
-			time.Sleep(50 * time.Millisecond)
-		}
+	{
+		// Exercise: Equivalent Binary Trees
+		fmt.Println(Same(tree.New(1), tree.New(1)))
+		fmt.Println(Same(tree.New(4), tree.New(6)))
 	}
 
-}
-
-func fibonacci2(c, quit chan int) {
-	x, y := 0, 1
-	for {
-		fmt.Println("waiting...")
-		select {
-		case c <- x:
-			time.Sleep(500 * time.Millisecond)
-			fmt.Printf("sent %v to c\n", x)
-			x, y = y, x+y
-		case <-quit:
-			fmt.Println("quit")
-			return
-		}
-	}
 }
