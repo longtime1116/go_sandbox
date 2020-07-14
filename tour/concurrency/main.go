@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"golang.org/x/tour/tree"
@@ -173,4 +174,23 @@ func main() {
 		}
 	} // false end
 
+	c := SafeCounter{v: make(map[string]int)}
+	for i := 0; i < 1000; i++ {
+		go c.Inc("hoge")
+	}
+	time.Sleep(time.Second)
+	fmt.Println(c.v["hoge"])
+
+}
+
+type SafeCounter struct {
+	v   map[string]int
+	mux sync.Mutex
+}
+
+func (c *SafeCounter) Inc(key string) {
+	// Inc() が goroutine として実行されるという前提があり、goroutine として一つだけが実行されている状態を作るためにやる
+	c.mux.Lock()
+	c.v[key]++
+	c.mux.Unlock()
 }
