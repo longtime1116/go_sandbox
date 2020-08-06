@@ -27,6 +27,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	io.Copy(w2, strings.NewReader("Hello, world! This is file2.\n"))
 }
 
+func CopyN(dst io.Writer, src io.Reader, n int64) (written int64, err error) {
+	lr := io.LimitReader(src, n)
+	return io.Copy(dst, lr)
+}
+
 func Run() {
 	if false {
 		{
@@ -94,26 +99,48 @@ func Run() {
 			http.HandleFunc("/", handler)
 			http.ListenAndServe(":8080", nil)
 		}
+		{
+			// Q3.5
+			f, err := os.Open("./chapter3/q3_5.txt")
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+
+			_, err = CopyN(os.Stdout, f, 32)
+			if err != nil {
+				panic(err)
+			}
+			os.Stdout.Write([]byte("\n"))
+		}
 	} // false end
 	{
-		// Q3.5
-		f, err := os.Open("./chapter3/q3_5.txt")
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
+		// Q3.6
+		var (
+			computer    = strings.NewReader("COMPUTER")
+			system      = strings.NewReader("SYSTEM")
+			programming = strings.NewReader("PROGRAMMING")
+		)
+		var stream io.Reader
+		r_a := io.NewSectionReader(programming, 5, 1)
+		r_s := io.LimitReader(system, 1)
+		r_c := io.LimitReader(computer, 1)
+		r_i := io.NewSectionReader(programming, 8, 1)
+		// not use pipe
+		//r_i2 := io.NewSectionReader(programming, 8, 1)
+		//stream = io.MultiReader(r_a, r_s, r_c, r_i, r_i2)
+		// use pipe
+		pr, pw := io.Pipe()
+		writer := io.MultiWriter(pw, pw)
+		// QUESTION: io.Pipe のブロッキングを回避するために、io.CopyNを使っているらしいが、意味がよくわからない。
+		// 			 LimitReaderの方が字数指定していることに意味があるのはわかるが。。
+		// go io.CopyN(writer, r_i, 1)
+		go io.Copy(writer, r_i)
+		defer pw.Close()
+		stream = io.MultiReader(r_a, r_s, r_c, io.LimitReader(pr, 2))
 
-		_, err = CopyN(os.Stdout, f, 32)
-		if err != nil {
-			panic(err)
-		}
-		os.Stdout.Write([]byte("\n"))
+		io.Copy(os.Stdout, stream)
 	}
-}
-
-func CopyN(dst io.Writer, src io.Reader, n int64) (written int64, err error) {
-	lr := io.LimitReader(src, n)
-	return io.Copy(dst, lr)
 }
 
 func DryRun() {
