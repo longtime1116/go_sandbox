@@ -28,7 +28,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Run() {
-	if true {
+	if false {
 		{
 			// Q3.1
 			src, err := os.Open("./chapter3/q3_1_1.txt")
@@ -95,6 +95,25 @@ func Run() {
 			http.ListenAndServe(":8080", nil)
 		}
 	} // false end
+	{
+		// Q3.5
+		f, err := os.Open("./chapter3/q3_5.txt")
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+
+		_, err = CopyN(os.Stdout, f, 32)
+		if err != nil {
+			panic(err)
+		}
+		os.Stdout.Write([]byte("\n"))
+	}
+}
+
+func CopyN(dst io.Writer, src io.Reader, n int64) (written int64, err error) {
+	lr := io.LimitReader(src, n)
+	return io.Copy(dst, lr)
 }
 
 func DryRun() {
