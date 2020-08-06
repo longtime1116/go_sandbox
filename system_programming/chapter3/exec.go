@@ -4,9 +4,28 @@ import (
 	"archive/zip"
 	"crypto/rand"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 )
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", "attachment; filename=sample.zip")
+
+	zipWriter := zip.NewWriter(w)
+	defer zipWriter.Close()
+	w1, err := zipWriter.Create("./file1.txt")
+	if err != nil {
+		panic(err)
+	}
+	io.Copy(w1, strings.NewReader("Hello, world! This is file1.\n"))
+	w2, err := zipWriter.Create("./file2.txt")
+	if err != nil {
+		panic(err)
+	}
+	io.Copy(w2, strings.NewReader("Hello, world! This is file2.\n"))
+}
 
 func Run() {
 	if true {
@@ -49,28 +68,34 @@ func Run() {
 				panic(err)
 			}
 		}
+		{
+			// Q3.3
+			// 1. q3_3_dest.gz を unzip すると q3.txt が展開され、中にはHello, Worldが書かれている
+			f, err := os.Create("./chapter3/q3_3_dst.zip")
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+			zipWriter := zip.NewWriter(f)
+			defer zipWriter.Close()
+			w1, err := zipWriter.Create("./file1.txt")
+			if err != nil {
+				panic(err)
+			}
+			io.Copy(w1, strings.NewReader("Hello, world! This is file1.\n"))
+			w2, err := zipWriter.Create("./file2.txt")
+			if err != nil {
+				panic(err)
+			}
+			io.Copy(w2, strings.NewReader("Hello, world! This is file2.\n"))
+		}
+		{
+			// Q3.4
+			http.HandleFunc("/", handler)
+			http.ListenAndServe(":8080", nil)
+		}
 	} // false end
-	{
-		// Q3.3
-		// 1. q3_3_dest.gz を unzip すると q3.txt が展開され、中にはHello, Worldが書かれている
-		f, err := os.Create("./chapter3/q3_3_dst.zip")
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-		zipWriter := zip.NewWriter(f)
-		defer zipWriter.Close()
-		w1, err := zipWriter.Create("./file1.txt")
-		if err != nil {
-			panic(err)
-		}
-		io.Copy(w1, strings.NewReader("Hello, world! This is file1.\n"))
-		w2, err := zipWriter.Create("./file2.txt")
-		if err != nil {
-			panic(err)
-		}
-		io.Copy(w2, strings.NewReader("Hello, world! This is file2.\n"))
-	}
 }
+
 func DryRun() {
 }
