@@ -76,12 +76,11 @@ func Run() {
 			wStdout.Write(s)
 			wStdout.Flush()
 		}
-	}
-	{
-		// Q2.3
-		http.HandleFunc("/", handler)
-		http.ListenAndServe(":8080", nil)
-
+		{
+			// Q2.3
+			http.HandleFunc("/", handler)
+			http.ListenAndServe(":8080", nil)
+		}
 	}
 }
 
