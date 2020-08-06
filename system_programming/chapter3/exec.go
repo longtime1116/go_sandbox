@@ -7,7 +7,7 @@ import (
 )
 
 func Run() {
-	if false {
+	if true {
 		{
 			// Q3.1
 			src, err := os.Open("./chapter3/q3_1_1.txt")
@@ -25,7 +25,8 @@ func Run() {
 	} // false end
 	{
 		// Q3.2
-		f, err := os.Create("./chapter3/q3_2.txt")
+		// 1
+		f, err := os.Create("./chapter3/q3_2_1")
 		if err != nil {
 			panic(err)
 		}
@@ -35,6 +36,15 @@ func Run() {
 			panic(err)
 		}
 		f.WriteString(string(buf))
+		// 2
+		f, err = os.Create("./chapter3/q3_2_2")
+		if err != nil {
+			panic(err)
+		}
+		_, err = io.CopyN(f, rand.Reader, 1024)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 func DryRun() {
