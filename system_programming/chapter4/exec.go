@@ -57,6 +57,7 @@ func Run() {
 			}
 		}()
 		<-signals
+		fmt.Println("SIGINT catched.")
 	}
 
 }
