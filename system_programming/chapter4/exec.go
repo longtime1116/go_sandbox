@@ -13,6 +13,7 @@ import (
 func Run() {
 	{
 		//// Q4.1
+		//// QUESTION: これって危険じゃないの？10echo1 とか渡すとechoが実行できてしまう
 		//signals := make(chan os.Signal, 1)
 		//signal.Notify(signals, syscall.SIGINT)
 		//scanner := bufio.NewScanner(os.Stdin)
