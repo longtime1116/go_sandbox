@@ -77,6 +77,17 @@ func fibonacci() func() int {
 		return cur
 	}
 }
+func fibonacci2() func() int {
+	pp := 0
+	p := 1
+	cur := 1
+	return func() int {
+		pp = p
+		p = cur
+		cur = pp + p
+		return pp
+	}
+}
 
 func main() {
 
