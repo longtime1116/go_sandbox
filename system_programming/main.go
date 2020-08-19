@@ -9,5 +9,5 @@ import (
 func main() {
 	chapter2.DryRun()
 	chapter3.DryRun()
-	chapter4.Run()
+	chapter4.DryRun()
 }
